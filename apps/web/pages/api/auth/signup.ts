@@ -34,7 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const data = req.body;
+  console.log("Before parse");
   const { email, password, language, token } = signupSchema.parse(data);
+  console.log("After parse");
 
   const username = slugify(data.username);
   const userEmail = email.toLowerCase();
@@ -56,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(422).json({ message: "Invalid username" });
     return;
   }
-
+  console.log("Search for  tokens");
   let foundToken: { id: number; teamId: number | null; expires: Date } | null = null;
   if (token) {
     foundToken = await prisma.verificationToken.findFirst({
@@ -87,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const hashedPassword = await hashPassword(password);
-
+  console.log("Password hashed");
   if (foundToken && foundToken?.teamId) {
     const team = await prisma.team.findUnique({
       where: {
@@ -195,6 +197,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
   } else {
+    console.log("Check calcom");
     if (IS_CALCOM) {
       const checkUsername = await checkPremiumUsername(username);
       if (checkUsername.premium) {
@@ -204,6 +207,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
     }
+
+    console.log("Upsert user");
     await prisma.user.upsert({
       where: { email: userEmail },
       update: {
@@ -219,6 +224,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         identityProvider: IdentityProvider.CAL,
       },
     });
+
+    console.log("Send email verification");
     await sendEmailVerification({
       email: userEmail,
       username,
