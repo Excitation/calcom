@@ -45,13 +45,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     incomingEmail: string,
     validation: { isValid: boolean; email: string | undefined }
   ) => {
+    console.log("hello");
     const { isValid, email } = validation;
     if (!isValid) {
+      console.log("not valid");
       const message: string =
         email !== incomingEmail ? "Username already taken" : "Email address is already registered";
 
       return res.status(409).json({ message });
     }
+    console.log("all good");
   };
 
   if (!username) {
@@ -61,6 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log("Search for  tokens");
   let foundToken: { id: number; teamId: number | null; expires: Date } | null = null;
   if (token) {
+    console.log("Token found");
     foundToken = await prisma.verificationToken.findFirst({
       where: {
         token,
@@ -84,12 +88,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return validationResponse(userEmail, teamUserValidation);
     }
   } else {
+    console.log("user validation");
     const userValidation = await validateUsername(username, userEmail);
-    return validationResponse(userEmail, userValidation);
+    console.log("validate username");
+    validationResponse(userEmail, userValidation);
   }
 
-  const hashedPassword = await hashPassword(password);
   console.log("Password hashed");
+  const hashedPassword = await hashPassword(password);
   if (foundToken && foundToken?.teamId) {
     const team = await prisma.team.findUnique({
       where: {
