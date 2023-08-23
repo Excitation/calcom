@@ -46,8 +46,8 @@ import SlugReplacementEmail from "./templates/slug-replacement-email";
 import type { TeamInvite } from "./templates/team-invite-email";
 import TeamInviteEmail from "./templates/team-invite-email";
 
-const sendEmail = (prepare: () => BaseEmail) => {
-  return new Promise((resolve, reject) => {
+const sendEmail = async (prepare: () => BaseEmail) => {
+  return await new Promise((resolve, reject) => {
     try {
       const email = prepare();
       resolve(email.sendEmail());
